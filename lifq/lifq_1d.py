@@ -3,13 +3,24 @@ import numpy as np
 
 
 class Lifq_1d:
+    """
+    Attributes : 
+    state : Is recording the state ( membrane potential) of each neuron during the simulation
+    spike : Is the recording of the firing time of each neuron during the simulation
+    matrix : matrix is the matrix associated to the entry signal in a type understandable by brian2
+    reconstr_array : is the matrix containing the reconstructed signal after passing through the LIF Quantizer
+
+    Callable method: 
+    Only fit()
+
+    """
     def __init__(self):
         self.state = None
         self.spike = None
         self.matrix = None
         self.reconstr_array = None
 
-    def simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
+    def __simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
                             v_reset, firing_threshold, membrane_resistance, membrane_time_scale,
                             abs_refractory_period):
         # differential equation of Leaky Integrate-and-Fire model
@@ -32,7 +43,7 @@ class Lifq_1d:
 
     # Rewrite the input signal  into the type for brian2 neuron models
 
-    def create_time_matrix1D(self, matrix, time, simulation_time):
+    def __create_time_matrix1D(self, matrix, time, simulation_time):
         big_matrix = np.empty(np.int64(np.ceil(simulation_time / time)), )
         for i in range(len(matrix)):
             temp = np.hstack(
@@ -48,7 +59,7 @@ class Lifq_1d:
         return b2.TimedArray(np.transpose(big_matrix) * b2.mA, dt=time)
 
        # Reconstruction of the input from the output of the model
-    def decode(self, spike_count, firing_threshold,
+    def __decode(self, spike_count, firing_threshold,
                membrane_time_scale, membrane_resistance, simulation_time, n):
         dict_u_hat = dict()
         for values in np.unique(spike_count):
@@ -71,12 +82,12 @@ class Lifq_1d:
         if logger:
             b2.BrianLogger.log_level_debug()
 
-        self.matrix = self.create_time_matrix1D(
+        self.matrix = self.__create_time_matrix1D(
             X, simulation_time, simulation_time)
-        self.state, self.spike = self.simulate_LIF_neuron(self.matrix, len(X), simulation_time, v_rest,
+        self.state, self.spike = self.__simulate_LIF_neuron(self.matrix, len(X), simulation_time, v_rest,
                                                           v_reset, firing_threshold, membrane_resistance,
                                                           membrane_time_scale, abs_refractory_period)
-        self.reconstr_array = self.decode(
+        self.reconstr_array = self.__decode(
             self.spike.count,
             firing_threshold,
             membrane_time_scale,
@@ -101,3 +112,5 @@ class Lifq_1d:
             return self.reconstr_array
         else:
             raise AttributeError("You cannot call getDecodedSignal before fit")
+
+
