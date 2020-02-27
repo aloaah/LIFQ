@@ -1,4 +1,8 @@
-### lifq python package
+========
+lifq
+========
+
+.. contents::
 
 Installation
 ============
@@ -31,17 +35,17 @@ To basically apply the Lif quantizer to a signal in 2D :
 
 .. code:: python
 
-from lifq import lifq_2d
-import matplotlib.pyplot as plt
+	from lifq import lifq_2d
+	import matplotlib.pyplot as plt
 
-img = plt.readimg("path/to/img")
-lif = lifq_2d()
-lif.fit(img)
-reconstr_img = lif.getDecodedSignal()
+	img = plt.readimg("path/to/img")
+	lif = lifq_2d()
+	lif.fit(img)
+	reconstr_img = lif.getDecodedSignal()
 
-plt.title('Image after LIFQ')
-plt.plot(reconstr_img, 'cmap = gray')
-plt.show()
+	plt.title('Image after LIFQ')
+	plt.plot(reconstr_img, 'cmap = gray')
+	plt.show()
 
 
 Links
