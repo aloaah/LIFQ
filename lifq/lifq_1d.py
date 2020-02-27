@@ -10,9 +10,6 @@ class Lifq_1d:
     matrix : matrix is the matrix associated to the entry signal in a type understandable by brian2
     reconstr_array : is the matrix containing the reconstructed signal after passing through the LIF Quantizer
 
-    Callable method: 
-    Only fit()
-
     """
     def __init__(self):
         self.state = None
@@ -77,6 +74,17 @@ class Lifq_1d:
     def fit(self, X, simulation_time=66 * b2.ms, v_rest=0 * b2.mV,
             v_reset=0 * b2.mV, firing_threshold=0.09 * b2.mV,
             membrane_time_scale=7 * b2.ms, membrane_resistance=550 * b2.mohm, abs_refractory_period=0 * b2.ms, logger=False):
+    """
+    Apply the lif quantizer to the data
+    parameters :
+    X : numpy array, is the input signal
+    simulation_time : time during which the simulation will be performed must be a of type (second)
+    firing threshold :  threshold at which the neuron will spike must be of type (volt)
+    membrane_time_scale : must be of type (second)
+    membrane_resistance : must be of type (ohm)
+    abs_refractory_period : period after a spike in which the neuron will do nothing, must be type (second)
+    logger : if set to True will enablethe brianlogger
+    """
         assert X.ndim == 1, "Dimmention Error"
 
         if logger:
@@ -96,18 +104,27 @@ class Lifq_1d:
             len(X))
 
     def getSpike(self):
+        """
+        return the spike recordings, don't use getSpike before fit
+        """
         if not isinstance(self.spike, type(None)):
             return self.spike
         else:
             raise AttributeError("You cannot call getSpike before fit")
 
     def getState(self):
+        """
+        return the state recordings, don't use getState before fit
+        """
         if not isinstance(self.state, type(None)):
             return self.state
         else:
             raise AttributeError("You cannot call getState before fit")
 
     def getDecodedSignal(self):
+        """
+        return the signal decoded from the spike train, don't use getDecodedSignal before fit
+        """
         if not isinstance(self.reconstr_array, type(None)):
             return self.reconstr_array
         else:
