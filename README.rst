@@ -21,11 +21,11 @@ Installation
 
 Requirements
 ============
-lifq requires numpy, brian2 and scikit_image_.
+lifq requires numpy_, brian2_ and scikit_image_.
 
-. _numpy = https://github.com/numpy/numpy
-. _brian2 = https://github.com/brian-team/brian2
-. _ scikit_image = https://github.com/scikit-image/scikit-image
+.. _numpy : https://github.com/numpy/numpy
+.. _brian2 : https://github.com/brian-team/brian2
+.. _scikit_image : https://github.com/scikit-image/scikit-image
 
 
 Usage
@@ -50,5 +50,6 @@ To basically apply the Lif quantizer to a signal in 2D :
 
 Links
 ======
+* LIFq paper_
 
-. _LIFq paper : https://hal.archives-ouvertes.fr/hal-01650750
+.. _paper : https://hal.archives-ouvertes.fr/hal-01650750
