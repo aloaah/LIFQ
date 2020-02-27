@@ -7,13 +7,12 @@ lifq
 Installation
 ============
   
-  #Step 0 	
+
 
   Donwload the project. This can be done directly by using the green download button. (If you do it this way don't forget to unpack the compressed folder)  
   It can also be done through a command prompt by writing the command line : **git clone github.com/aloaah/flifq** 
   After this step you should have the project folder on your machine.
 
-  #Step 1 
 
   Go to the folder where the repository is cloned
   run : pip install .
