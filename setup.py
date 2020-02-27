@@ -9,6 +9,6 @@ setup(name='lifq',
       license='MIT',
       packages=['lifq'],
       install_requires=[
-          'brian2==2.2.2.1', 'numpy', 'scikit-image'
+          'brian2', 'numpy', 'scikit-image'
       ],
       zip_safe=False)
