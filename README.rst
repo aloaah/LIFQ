@@ -29,7 +29,7 @@ Usage
 
 To basically apply the Lif quantizer to a signal in 2D : 
 
-. code-block::python
+.. code:: python
 
 from lifq import lifq_2d
 import matplotlib.pyplot as plt
