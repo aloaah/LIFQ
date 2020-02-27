@@ -34,11 +34,11 @@ To basically apply the Lif quantizer to a signal in 2D :
 
 .. code:: python
 
-	from lifq import lifq_2d
+	from lifq.lifq_2d import Lifq_2d
 	import matplotlib.pyplot as plt
 
 	img = plt.readimg("path/to/img")
-	lif = lifq_2d()
+	lif = Lifq_2d()
 	lif.fit(img)
 	reconstr_img = lif.getDecodedSignal()
 
