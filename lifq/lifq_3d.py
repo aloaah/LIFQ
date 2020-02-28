@@ -3,13 +3,20 @@ import numpy as np
 
 
 class Lifq_3d:
+    """
+    Attributes : 
+    state : Is recording the state ( membrane potential) of each neuron during the simulation
+    spike : Is the recording of the firing time of each neuron during the simulation
+    matrix : matrix is the matrix associated to the entry signal in a type understandable by brian2
+    reconstr_array : is the matrix containing the reconstructed signal after passing through the LIF Quantizer
+    """
     def __init__(self):
         self.state = None
         self.spike = None
         self.matrix = None
         self.reconstr_array = None
 
-    def reformat_video_frame_matrix(self, video_frame, time, save_matrix,  logger):
+    def _reformat_video_frame_matrix(self, video_frame, time, save_matrix,  logger):
         reformated_matrix = []
         if logger:
             print("Matrix construction, it may take some time")
@@ -24,7 +31,7 @@ class Lifq_3d:
             print("Matrix is now complete, moving to neuron simulation")
         return np.asarray(reformated_matrix, dtype=np.float64)
 
-    def create_time_matrix(self, matrix, time, simulation_time):
+    def _create_time_matrix(self, matrix, time, simulation_time):
         big_matrix = np.empty(np.int64(np.ceil(simulation_time/time)), )
         for i in range(len(matrix)):
             for j in range(len(matrix[i])):
@@ -34,7 +41,7 @@ class Lifq_3d:
         big_matrix = np.delete(big_matrix, 0, 0)
         return big_matrix
 
-    def simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
+    def _simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
                             v_reset, firing_threshold, membrane_resistance, membrane_time_scale,
                             abs_refractory_period):
         # Construct the network just once
@@ -64,13 +71,13 @@ class Lifq_3d:
             b2.run(simulation_time)
             self.spike.append(np.asarray(spike_monitor.count))
 
-    def decode_all(self, video_frame, simulation_time, firing_threshold, membrane_resistance, membrane_time_scale):
+    def _decode_all(self, video_frame, simulation_time, firing_threshold, membrane_resistance, membrane_time_scale):
         self.reconstr_array = []
         for spike_count in self.spike:
-            self.reconstr_array.append(self.decode_single_frame(
+            self.reconstr_array.append(self._decode_single_frame(
                 spike_count, video_frame, simulation_time, firing_threshold, membrane_resistance, membrane_time_scale))
 
-    def decode_single_frame(self, spike_count, video_frame, simulation_time, firing_threshold, membrane_resistance, membrane_time_scale):
+    def _decode_single_frame(self, spike_count, video_frame, simulation_time, firing_threshold, membrane_resistance, membrane_time_scale):
 
         dict_u_hat = dict()
         for values in np.unique(spike_count):
@@ -91,7 +98,23 @@ class Lifq_3d:
             membrane_time_scale=7 * b2.ms, membrane_resistance=550 * b2.mohm,
             abs_refractory_period=0 * b2.ms, logger=False, save_matrix=False,
             load_matrix=False):
-        X = np.asarray(X)
+            """
+            Apply the lif quantizer to the data
+            parameters :
+            X : numpy array, is the input signal
+            simulation_time : time during which the simulation will be performed must be a of type (second)
+            firing threshold :  threshold at which the neuron will spike must be of type (volt)
+            membrane_time_scale : must be of type (second)
+            membrane_resistance : must be of type (ohm)
+            abs_refractory_period : period after a spike in which the neuron will do nothing, must be type (second)
+            logger : if set to True will enablethe brianlogger
+            save_matrix : if set to True, will save the matrix computed from the input data,  it's usefull if you plan on
+            testing multiple setup for the same data input, 
+            load_matrix : is set to True, the matrix will not be re calculated
+             instead it will load the matrix calculated beforehand, it saves a lot of computing time
+        """
+        if not isinstance(X, np.ndarray):
+            X  = np.asarray(X)
         assert X.ndim > 2, "Please provide an array with at least three dimension"
         assert X.shape[1] >= X.shape[
             2], "Please resize the image to a format (n * m) where n >= m"
@@ -101,18 +124,25 @@ class Lifq_3d:
             X = np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
         N = X.shape[1] * X.shape[2]
         if load_matrix:
-            self.matrix = np.load('video_frame.npy')
+            try:
+                self.matrix = np.load('video_frame.npy')
+            except FileNotFoundError:
+                print("Could not load matrix")
+                self.matrix = self._reformat_video_frame_matrix(
+                X, simulation_time, save_matrix, logger)
+
+
         else:
-            self.matrix = self.reformat_video_frame_matrix(
+            self.matrix = self._reformat_video_frame_matrix(
                 X, simulation_time, save_matrix, logger)
 
         if logger:
             b2.BrianLogger.log_level_debug()
-        self.simulate_LIF_neuron(self.matrix, N, simulation_time, v_rest,
+        self._simulate_LIF_neuron(self.matrix, N, simulation_time, v_rest,
                                  v_reset, firing_threshold, membrane_resistance, membrane_time_scale,
                                  abs_refractory_period)
 
-        self.decode_all(X, simulation_time, firing_threshold,
+        self._decode_all(X, simulation_time, firing_threshold,
                         membrane_resistance, membrane_time_scale)
 
     def getSpike(self):
