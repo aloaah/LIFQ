@@ -17,7 +17,7 @@ class Lifq_1d:
         self.matrix = None
         self.reconstr_array = None
 
-    def __simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
+    def _simulate_LIF_neuron(self, input_current, N, simulation_time, v_rest,
                             v_reset, firing_threshold, membrane_resistance, membrane_time_scale,
                             abs_refractory_period):
         # differential equation of Leaky Integrate-and-Fire model
@@ -40,7 +40,7 @@ class Lifq_1d:
 
     # Rewrite the input signal  into the type for brian2 neuron models
 
-    def __create_time_matrix1D(self, matrix, time, simulation_time):
+    def _create_time_matrix1D(self, matrix, time, simulation_time):
         big_matrix = np.empty(np.int64(np.ceil(simulation_time / time)), )
         for i in range(len(matrix)):
             temp = np.hstack(
@@ -56,7 +56,7 @@ class Lifq_1d:
         return b2.TimedArray(np.transpose(big_matrix) * b2.mA, dt=time)
 
        # Reconstruction of the input from the output of the model
-    def __decode(self, spike_count, firing_threshold,
+    def _decode(self, spike_count, firing_threshold,
                membrane_time_scale, membrane_resistance, simulation_time, n):
         dict_u_hat = dict()
         for values in np.unique(spike_count):
@@ -74,28 +74,30 @@ class Lifq_1d:
     def fit(self, X, simulation_time=66 * b2.ms, v_rest=0 * b2.mV,
             v_reset=0 * b2.mV, firing_threshold=0.09 * b2.mV,
             membrane_time_scale=7 * b2.ms, membrane_resistance=550 * b2.mohm, abs_refractory_period=0 * b2.ms, logger=False):
-    """
-    Apply the lif quantizer to the data
-    parameters :
-    X : numpy array, is the input signal
-    simulation_time : time during which the simulation will be performed must be a of type (second)
-    firing threshold :  threshold at which the neuron will spike must be of type (volt)
-    membrane_time_scale : must be of type (second)
-    membrane_resistance : must be of type (ohm)
-    abs_refractory_period : period after a spike in which the neuron will do nothing, must be type (second)
-    logger : if set to True will enablethe brianlogger
-    """
+        """
+        Apply the lif quantizer to the data
+        parameters :
+        X : numpy array, is the input signal
+        simulation_time : time during which the simulation will be performed must be a of type (second)
+        firing threshold :  threshold at which the neuron will spike must be of type (volt)
+        membrane_time_scale : must be of type (second)
+        membrane_resistance : must be of type (ohm)
+        abs_refractory_period : period after a spike in which the neuron will do nothing, must be type (second)
+        logger : if set to True will enablethe brianlogger
+        """
+        if not isinstance(X, np.ndarray):
+            X  = np.asarray(X)
         assert X.ndim == 1, "Dimmention Error"
 
         if logger:
             b2.BrianLogger.log_level_debug()
 
-        self.matrix = self.__create_time_matrix1D(
+        self.matrix = self._create_time_matrix1D(
             X, simulation_time, simulation_time)
-        self.state, self.spike = self.__simulate_LIF_neuron(self.matrix, len(X), simulation_time, v_rest,
+        self.state, self.spike = self._simulate_LIF_neuron(self.matrix, len(X), simulation_time, v_rest,
                                                           v_reset, firing_threshold, membrane_resistance,
                                                           membrane_time_scale, abs_refractory_period)
-        self.reconstr_array = self.__decode(
+        self.reconstr_array = self._decode(
             self.spike.count,
             firing_threshold,
             membrane_time_scale,
