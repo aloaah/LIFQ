@@ -5,7 +5,7 @@ from skimage.measure import compare_psnr, compare_ssim
 
 
 class Lifq_2d:
-    def __init__(self):
+
     """
     Attributes : 
     state : Is recording the state ( membrane potential) of each neuron during the simulation
@@ -13,6 +13,7 @@ class Lifq_2d:
     matrix : matrix is the matrix associated to the entry signal in a type understandable by brian2
     reconstr_array : is the matrix containing the reconstructed signal after passing through the LIF Quantizer
     """
+    def __init__(self):
         self.state = None
         self.spike = None
         self.matrix = None
@@ -48,7 +49,6 @@ class Lifq_2d:
                     temp = np.hstack(c for c in np.full((np.int64(np.ceil(simulation_time/time)), 1), matrix[i][j]/255 ))
                     big_matrix = np.vstack((big_matrix, temp))
         else:
-            print("jsuila")
             for i in range(len(matrix)):
                 for j in range(len(matrix[i])):
                     temp = np.hstack(c for c in np.full((np.int64(np.ceil(simulation_time/time)), 1), matrix[i][j] ))
@@ -56,18 +56,17 @@ class Lifq_2d:
         big_matrix = np.delete(big_matrix, 0, 0)
         return b2.TimedArray(np.transpose(big_matrix) * b2.mA, dt = time)
 
-
-    def _compute_entropy(self, spike_count):
-        entropy = 0
-        for i in np.unique(spike_count, return_index = True)[1]:
-            entropy += _proba(i,  spike_count)*np.log(proba(i, spike_count))
-        return -entropy
-
     def _proba(self, i, spike_count):
         unique, counts = np.unique(spike_count, return_counts=True)
         dict_temp = dict(zip(unique, counts))
         return dict_temp[spike_count[i]]/len(spike_count)
 
+
+    def _compute_entropy(self, spike_count):
+        entropy = 0
+        for i in np.unique(spike_count, return_index = True)[1]:
+            entropy += self._proba(i,  spike_count)*np.log(self._proba(i, spike_count))
+        return -entropy
 
     def _decode2D(self, spike_count, firing_threshold,
                membrane_time_scale, membrane_resistance, simulation_time, shape, is_pixel):
@@ -124,7 +123,7 @@ class Lifq_2d:
 
         self.matrix = self._create_time_matrix(
             X, simulation_time, simulation_time, is_pixel)
-        self.state, self.spike = self._simulate_LIF_neuron(self.matrix, len(X), simulation_time, v_rest,
+        self.state, self.spike = self._simulate_LIF_neuron(self.matrix, X.shape[0]*X.shape[1], simulation_time, v_rest,
                                                           v_reset, firing_threshold, membrane_resistance,
                                                           membrane_time_scale, abs_refractory_period)
         self.reconstr_array = self._decode2D(
@@ -167,7 +166,7 @@ class Lifq_2d:
         Return the Entropy  of the signal, don't use getEntropy before fit
         """
         if not isinstance(self.spike, type(None)):
-            return _compute_entropy(self.spike.count)
+            return self._compute_entropy(self.spike.count)
         else:
             raise AttributeError("You cannot call getEntropy before fit")
 
